@@ -13,10 +13,12 @@ module.exports = React.createClass({
   render() {
     var message = this.state.message;
   	return (
-        <div>
-          <input type={"text"} name={"username"} value={this.state.username} onChange={this.handleUserNameChange}/>
-          <input type={"password"} name={"password"} value={this.state.password} onChange={this.handlePasswordChange}/>
-          <button onClick={this.handleClick} >Login</button>
+        <div className="login-page">
+          <div className="form">
+              <input type={"text"} name={"username"} value={this.state.username} onChange={this.handleUserNameChange}/>
+              <input type={"password"} name={"password"} value={this.state.password} onChange={this.handlePasswordChange}/>
+              <button onClick={this.handleClick}>Login</button>
+          </div>
         </div>
       );
   },

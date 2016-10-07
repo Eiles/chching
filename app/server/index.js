@@ -11,9 +11,7 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var passportSocketIo = require("passport.socketio");
 var LocalStrategy = require('passport-local').Strategy;
-
 var argv = require('minimist')(process.argv.slice(2));
-
 
 const dgram = require('dgram');
 const udpserver = dgram.createSocket('udp4');
@@ -68,7 +66,7 @@ var chching={
   launchDate:new Date(),
   getDate:function(){
     var date = this.launchDate
-    return date.toLocaleDateString()+' '+date.toLocaleTimeString();
+    return date.toLocaleDateString();
   },
   lastLeads:[],
   counter:0,
@@ -77,14 +75,36 @@ var chching={
     this.counter++;
     this.todayCounter++;
     this.lastLeads.push(lead);
-    if(this.lastLeads.length>10){
-      this.removeLead();
+    if(this.lastLeads.length>25){
+      this.removeOldestLead();
     }
   },
   removeLead:function(){
     this.lastLeads.shift();
-  } 
+  },
+  removeOldestLead:function(){
+    var oldest=this.getOldestLead();
+    for(i=0;i<this.lastLeads.length;i++){
+      if(this.lastLeads[i].id==oldest.id){
+        this.lastLeads.splice(i,1);
+        break;
+      }
+    }
+  },
+  getOldestLead:function(){
+    var leads=this.lastLeads;
+    var oldest=leads[0];
+    var i;
+    for(i=0;i<leads.length;i++){
+      if(leads[i].date<oldest.date)
+        oldest=leads[i];
+    }
+    return oldest;
+  },
+
 }
+
+
 
 //Reset the current day counter everyday at midnight
 var j = schedule.scheduleJob({hour: 00, minute: 00}, function(){
@@ -105,8 +125,7 @@ function registerUser(username,password){
 //Socket.io events
 io.on('connection', function (socket) {
 	socket.on('init', function(){
-      socket.emit('counters',{total:chching.counter,today:chching.todayCounter,launchDate:chching.getDate()});
-   		socket.emit('init', chching.lastLeads);
+   		socket.emit('init',{total:chching.counter,today:chching.todayCounter,launchDate:chching.getDate(),leads:chching.lastLeads});
   	});
 });
 
